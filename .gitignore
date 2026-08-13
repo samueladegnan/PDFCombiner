@@ -3,6 +3,7 @@ uploads/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 .env/
 
@@ -23,6 +24,7 @@ __pycache__/
 .vscode/
 *.swp
 *.swo
+*.log
 
 # OS specific files
 .DS_Store

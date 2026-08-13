@@ -1,29 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Combiner</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Combine PDF files in the order you choose, right in your browser." />
+  <title>Merge PDFs — PDF Combiner</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
-  <div class="container">
-    <h1>PDF Combiner</h1>
-  
-    <!-- Drop Zone -->
-    <div id="dropZone" class="drop-zone">
-      <p>📂 Drag & drop PDFs here or <label for="pdfFiles" style="color: #4a90e2; cursor: pointer;">choose files</label></p>
-      <input type="file" id="pdfFiles" multiple accept=".pdf" />
-    </div>
-    
-    <!-- File list -->
-    <ul id="fileList"></ul>
-    
-    <button id="combineDownloadBtn">Combine & Download</button>
-    <p id="status"></p>
-    <button id="clearFilesBtn">Clear Uploaded Files</button>
-  </div>
-  
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <main class="app-shell">
+    <header class="app-header">
+      <a class="brand" href="{{ url_for('main.index') }}" aria-label="PDF Combiner home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="img"><path d="M6 2.75h8.2L19 7.55v13.7H6a2 2 0 0 1-2-2v-14.5a2 2 0 0 1 2-2Z"/><path d="M14 2.75v5h5M8 13h8M8 16.5h5"/></svg>
+        </span>
+        <span>PDF Combiner</span>
+      </a>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">A cleaner way to organize documents</p>
+      <h1 id="page-title">Merge your PDFs,<br /><span>in the right order.</span></h1>
+      <p class="hero-copy">Drop in your files, arrange them exactly how you want, and download one polished document. No account required.</p>
+    </section>
+
+    <section class="workspace-card" aria-label="PDF merge workspace">
+      <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-controls="pdfFiles" aria-describedby="dropHint" data-max-file-size="{{ config['MAX_FILE_SIZE'] }}">
+        <span class="upload-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5M5 14.5v3A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5v-3"/></svg>
+        </span>
+        <h2>Drop PDF files here</h2>
+        <p id="dropHint">or <label for="pdfFiles">browse from your device</label></p>
+        <p class="file-rules">PDF only · Up to {{ config['MAX_FILES'] }} files · {{ config['MAX_FILE_SIZE'] // (1024 * 1024) }} MB per file</p>
+        <input id="pdfFiles" type="file" accept="application/pdf,.pdf" multiple />
+      </div>
+
+      <div class="files-heading">
+        <div>
+          <h2>Your files <span id="fileCount" class="count-badge">0</span></h2>
+          <p>Drag rows to choose the merge order.</p>
+        </div>
+        <span class="order-hint" aria-hidden="true">1 <span>→</span> 2 <span>→</span> 3</span>
+      </div>
+
+      <ol id="fileList" class="file-list" aria-live="polite" aria-label="Selected PDF files"></ol>
+
+      <div id="emptyState" class="empty-state">
+        <span aria-hidden="true">✦</span>
+        <p>Your selected PDFs will appear here</p>
+      </div>
+
+      <div class="workspace-actions">
+        <button id="combineDownloadBtn" class="button button-primary" type="button" disabled>
+          <span class="button-icon" aria-hidden="true">↓</span>
+          <span>Combine &amp; download</span>
+        </button>
+        <button id="clearFilesBtn" class="button button-quiet" type="button" disabled>Clear workspace</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <footer class="app-footer">
+      <span><span class="footer-dot"></span> Runs locally on your machine</span>
+      <span>Built for focused document work</span>
+    </footer>
+  </main>
+
+  <noscript>
+    <div class="no-script">JavaScript is required to upload and combine PDFs.</div>
+  </noscript>
+  <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
 </body>
 </html>

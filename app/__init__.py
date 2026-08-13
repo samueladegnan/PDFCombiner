@@ -1,30 +1,41 @@
-from flask import Flask
 import os
-import sys
+
+from flask import Flask, jsonify, request
+from werkzeug.exceptions import RequestEntityTooLarge
+
+from config import config
+
 
 def get_resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    """Return a resource path that works in development and PyInstaller builds."""
+    import sys
+
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.dirname(__file__)))
     return os.path.join(base_path, relative_path)
 
-def create_app():
-    """Application factory function"""
-    app = Flask(__name__)
-    
-    # Configure upload folder
-    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
-    
-    # Clear existing files on startup
-    for filename in os.listdir(UPLOAD_FOLDER):
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        if os.path.isfile(file_path) and filename.endswith('.pdf'):
-            os.remove(file_path)
-    
-    # Register blueprints
+
+def create_app(config_class=None):
+    """Create and configure the PDF Combiner application."""
+    app = Flask(
+        __name__,
+        template_folder=get_resource_path("app/templates"),
+        static_folder=get_resource_path("app/static"),
+    )
+
+    if config_class is None:
+        environment = os.getenv("APP_ENV", "development")
+        config_class = config.get(environment, config["default"])
+    app.config.from_object(config_class)
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_file_too_large(_error):
+        if request.path != "/":
+            return jsonify({"error": "The upload is too large. Please choose smaller files."}), 413
+        return "Request entity too large", 413
+
     from app.routes import main_bp
+
     app.register_blueprint(main_bp)
-    
     return app

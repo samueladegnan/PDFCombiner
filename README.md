@@ -1,71 +1,77 @@
-# PDF Combiner App
+# PDF Combiner
 
-A simple web app to upload, combine, and download PDFs using Flask + PyPDF2.
+A focused local web app for validating, ordering, and merging PDF documents. The interface is intentionally small: upload files, drag them into the right order, and download one combined PDF.
 
-## 📂 Project Structure
+## Highlights
 
-```
-pdf_combiner/
-├── app/
-│   ├── __init__.py       # App initialization
-│   ├── routes.py         # Route handlers
-│   ├── services/         # Business logic
-│   │   ├── __init__.py
-│   │   └── pdf_service.py
-│   ├── static/           # Static assets
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   └── js/
-│   │       └── script.js
-│   ├── templates/        # HTML templates
-│   │   └── index.html
-│   └── utils/            # Helper functions
-│       ├── __init__.py
-│       └── file_utils.py
-├── config.py             # Configuration
-├── uploads/              # Uploaded files (git ignored)
-├── run.py                # Application entry point
-├── requirements.txt      # Dependencies
-├── .gitignore
-└── clean.py              # Cleanup script
-```
+- Drag-and-drop or file-picker uploads with keyboard support.
+- Server-side PDF validation catches damaged, empty, and password-protected files before they enter the workspace.
+- Drag rows to control the exact merge order.
+- Session-isolated workspaces prevent different browser sessions from sharing filenames.
+- Files are stored locally and the generated download is temporary.
+- Clear upload limits and useful error messages instead of silent failures.
+- Responsive dark interface with reduced-motion and focus-visible support.
 
-## 🔧 Setup
+## Local development
 
-1. Clone the repo:
+### Requirements
+
+- Python 3.9+
+- A virtual environment is recommended.
+
+### Install and run
+
 ```bash
 git clone https://github.com/yourusername/pdf-combiner.git
 cd pdf-combiner
-```
+python -m venv .venv
 
-2. Create and activate a virtual environment:
-
-```bash
-python -m venv venv
 # Windows
-venv\Scripts\activate
+.venv\\Scripts\\activate
 # macOS/Linux
-source venv/bin/activate
-```
+source .venv/bin/activate
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Run the app:
-```bash
+python -m pip install -r requirements.txt
 python run.py
 ```
 
-The app will open at http://127.0.0.1:5000
+The development server opens at <http://127.0.0.1:5000>. Set `OPEN_BROWSER=0` when you do not want the browser to open automatically.
 
-## 📦 Creating an executable
+### Configuration
 
-To create a standalone executable:
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_ENV` | `development` | Select `development` or `production` configuration. |
+| `SECRET_KEY` | Development-only fallback | Flask session signing key; set a long random value outside local development. |
+| `HOST` | `127.0.0.1` | Bind address for `python run.py`. |
+| `PORT` | `5000` | Port for `python run.py`. |
+| `OPEN_BROWSER` | `1` | Set to `0` to disable automatic browser launch. |
+
+The default limits are 20 files per workspace and 25 MB per file. Update `Config` in `config.py` if your deployment needs different limits.
+
+## Testing
+
+The test suite uses Python's standard library test runner and does not require an additional test dependency:
 
 ```bash
-pip install pyinstaller
+python -m unittest discover -s tests -v
+```
 
-# Windows
-pyinstaller --onefile --add-data "app/templates;app/templates" --add-data "app/static;app/static" run.py
+## Production notes
+
+`run.py` is a convenient local entry point, not a production server. For deployment, use a WSGI server such as Gunicorn or Waitress, provide `APP_ENV=production` and a strong `SECRET_KEY`, and configure a scheduled cleanup for abandoned session directories under `uploads/`.
+
+## Project structure
+
+```text
+app/
+├── routes.py                 # HTTP API and session workspaces
+├── services/pdf_service.py   # PDF validation and merging
+├── utils/file_utils.py       # Shared upload validation
+├── templates/index.html      # Accessible application shell
+└── static/                   # CSS and browser behavior
+config.py                    # Environment and upload limits
+run.py                       # Local entry point
+clean.py                     # Remove local build/upload artifacts
+tests/                       # Service and route tests
+```
